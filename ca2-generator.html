@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CA2 Front Page Generator – Supreme Knowledge Foundation</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Raleway:wght@300;400;600;700&family=DM+Serif+Display&family=Montserrat:wght@300;400;600;700;900&family=Cormorant+Garamond:wght@300;400;600;700&family=Bebas+Neue&family=Josefin+Sans:wght@300;400;600;700&family=Libre+Baskerville:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --brand: #c0392b;
+    --brand2: #e74c3c;
+    --dark: #0f0f0f;
+    --mid: #1a1a2e;
+    --light: #f8f5f0;
+    --gold: #d4a017;
+    --silver: #aaa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Raleway', sans-serif;
+    background: #0a0a14;
+    color: #eee;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(192,57,43,0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(25,25,80,0.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(10,10,30,0.8) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app-header {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 40px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .app-header .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--brand), #8e1b0f);
+    color: #fff;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    padding: 5px 16px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .app-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 900;
+    background: linear-gradient(135deg, #fff 40%, var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+
+  .app-header p {
+    color: #888;
+    font-size: 14px;
+    letter-spacing: 1px;
+  }
+
+  .main-layout {
+    position: relative;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 140px);
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    background: rgba(15,15,25,0.95);
+    border-right: 1px solid rgba(255,255,255,0.07);
+    overflow-y: auto;
+    max-height: calc(100vh - 140px);
+    position: sticky;
+    top: 0;
+  }
+
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--brand); border-radius: 2px; }
+
+  .section-title {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--brand);
+    padding: 20px 24px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  /* Template chooser */
+  .template-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .tmpl-card {
+    cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+    position: relative;
+  }
+
+  .tmpl-card:hover { border-color: var(--brand); transform: translateY(-2px); }
+  .tmpl-card.active { border-color: var(--brand); box-shadow: 0 0 20px rgba(192,57,43,0.4); }
+
+  .tmpl-card .tmpl-thumb {
+    width: 100%;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 900;
+    font-family: 'Playfair Display', serif;
+  }
+
+  .tmpl-card .tmpl-name {
+    font-size: 11px;
+    text-align: center;
+    padding: 6px;
+    background: rgba(0,0,0,0.4);
+    font-family: 'Josefin Sans', sans-serif;
+    letter-spacing: 1px;
+  }
+
+  .tmpl-card .active-dot {
+    display: none;
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 10px; height: 10px;
+    background: var(--brand);
+    border-radius: 50%;
+  }
+  .tmpl-card.active .active-dot { display: block; }
+
+  /* Form */
+  .form-area { padding: 16px; }
+
+  .form-group { margin-bottom: 14px; }
+
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 6px;
+    font-family: 'Josefin Sans', sans-serif;
+  }
+
+  .form-group input, .form-group select {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #fff;
+    font-family: 'Raleway', sans-serif;
+    font-size: 14px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--brand);
+  }
+
+  .form-group input[type="color"] {
+    height: 40px;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+
+  select option { background: #1a1a2e; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Style controls */
+  .style-controls { padding: 16px; }
+
+  .style-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  /* Download buttons */
+  .download-area {
+    padding: 16px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .dl-btn {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.25s ease;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .dl-pdf {
+    background: linear-gradient(135deg, var(--brand), #8e1b0f);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(192,57,43,0.4);
+  }
+  .dl-pdf:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(192,57,43,0.6); }
+
+  .dl-img {
+    background: rgba(255,255,255,0.06);
+    color: #ddd;
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  .dl-img:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+
+  .dl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* ===== PREVIEW AREA ===== */
+  .preview-area {
+    background: #111118;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    overflow: auto;
+  }
+
+  .preview-wrapper {
+    box-shadow: 0 30px 100px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+    border-radius: 4px;
+    transform-origin: top center;
+    transition: transform 0.3s ease;
+  }
+
+  /* ===== FRONT PAGE TEMPLATES ===== */
+  #frontpage {
+    width: 595px;
+    min-height: 842px;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Raleway', sans-serif;
+  }
+
+  /* --- Template 1: Classic Elegant --- */
+  .tmpl-classic {
+    background: #fff;
+    color: #222;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .tmpl-classic .top-bar {
+    width: 100%;
+    height: 12px;
+    background: linear-gradient(90deg, #c0392b, #8e1b0f);
+  }
+
+  .tmpl-classic .logo-zone {
+    margin: 30px auto 16px;
+    text-align: center;
+  }
+
+  .tmpl-classic .logo-zone img { width: 130px; }
+
+  .tmpl-classic .ornament {
+    width: 80%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #c0392b, transparent);
+    margin: 10px auto;
+  }
+
+  .tmpl-classic .assignment-badge {
+    margin: 18px auto;
+    background: linear-gradient(135deg, #c0392b, #8e1b0f);
+    color: #fff;
+    padding: 14px 50px;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-align: center;
+    position: relative;
+  }
+
+  .tmpl-classic .assignment-badge::before,
+  .tmpl-classic .assignment-badge::after {
+    content: '';
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    width: 30px; height: 2px;
+    background: rgba(255,255,255,0.5);
+  }
+  .tmpl-classic .assignment-badge::before { left: 10px; }
+  .tmpl-classic .assignment-badge::after { right: 10px; }
+
+  .tmpl-classic .fields-box {
+    width: 85%;
+    margin: 20px auto;
+    border: 2px solid #c0392b;
+    padding: 30px 40px;
+    position: relative;
+  }
+
+  .tmpl-classic .fields-box::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid rgba(192,57,43,0.2);
+  }
+
+  .tmpl-classic .field-row {
+    display: flex;
+    margin-bottom: 18px;
+    align-items: baseline;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    padding-bottom: 10px;
+  }
+
+  .tmpl-classic .field-row:last-child { border-bottom: none; margin-bottom: 0; }
+
+  .tmpl-classic .field-label {
+    font-weight: 700;
+    min-width: 190px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .tmpl-classic .field-value {
+    flex: 1;
+    font-size: 14px;
+    padding-left: 10px;
+    font-weight: 400;
+    color: #c0392b;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+  }
+
+  .tmpl-classic .bottom-bar {
+    width: 100%;
+    margin-top: auto;
+    padding: 16px;
+    text-align: center;
+    font-size: 11px;
+    color: #888;
+    letter-spacing: 1px;
+    border-top: 1px solid #eee;
+  }
+
+  /* --- Template 2: Modern Dark --- */
+  .tmpl-modern {
+    background: #0f1117;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tmpl-modern .accent-stripe {
+    width: 6px;
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: linear-gradient(180deg, #c0392b, #ff6b35);
+  }
+
+  .tmpl-modern .content-pad {
+    padding: 50px 50px 50px 70px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tmpl-modern .top-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .tmpl-modern .top-section img { width: 100px; filter: brightness(1.2); }
+
+  .tmpl-modern .inst-info h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+  }
+  .tmpl-modern .inst-info p { font-size: 11px; color: #888; letter-spacing: 1px; margin-top: 4px; }
+
+  .tmpl-modern .assignment-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 70px;
+    line-height: 0.9;
+    color: rgba(255,255,255,0.06);
+    position: absolute;
+    right: 30px;
+    top: 120px;
+    letter-spacing: 2px;
+  }
+
+  .tmpl-modern .ca2-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 6px;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+
+  .tmpl-modern .ca2-sub {
+    font-size: 12px;
+    color: #c0392b;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 50px;
+  }
+
+  .tmpl-modern .fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .tmpl-modern .field-item {}
+
+  .tmpl-modern .field-key {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #c0392b;
+    margin-bottom: 6px;
+    font-family: 'Josefin Sans', sans-serif;
+  }
+
+  .tmpl-modern .field-val {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    min-height: 28px;
+  }
+
+  .tmpl-modern .bottom-accent {
+    margin-top: auto;
+    padding-top: 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .tmpl-modern .bottom-accent .line { flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
+  .tmpl-modern .bottom-accent span { font-size: 10px; color: #555; letter-spacing: 2px; }
+
+  /* --- Template 3: Royal Gold --- */
+  .tmpl-royal {
+    background: #fefcf5;
+    color: #1a1208;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 12px solid #d4a017;
+  }
+
+  .tmpl-royal .inner-border {
+    position: absolute;
+    inset: 20px;
+    border: 2px solid rgba(212,160,23,0.4);
+    pointer-events: none;
+  }
+
+  .tmpl-royal .corner {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-color: #d4a017;
+    border-style: solid;
+  }
+  .tmpl-royal .corner.tl { top: 28px; left: 28px; border-width: 3px 0 0 3px; }
+  .tmpl-royal .corner.tr { top: 28px; right: 28px; border-width: 3px 3px 0 0; }
+  .tmpl-royal .corner.bl { bottom: 28px; left: 28px; border-width: 0 0 3px 3px; }
+  .tmpl-royal .corner.br { bottom: 28px; right: 28px; border-width: 0 3px 3px 0; }
+
+  .tmpl-royal .logo-zone {
+    margin: 45px auto 20px;
+    text-align: center;
+  }
+
+  .tmpl-royal .logo-zone img { width: 110px; }
+
+  .tmpl-royal .divider-gold {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px auto;
+    width: 70%;
+  }
+  .tmpl-royal .divider-gold .line { flex: 1; height: 1px; background: #d4a017; }
+  .tmpl-royal .divider-gold .diamond {
+    width: 8px; height: 8px;
+    background: #d4a017;
+    transform: rotate(45deg);
+  }
+
+  .tmpl-royal .ca2-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: #8B6914;
+    margin: 12px 0;
+    text-align: center;
+  }
+
+  .tmpl-royal .subheading {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #b8860b;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+  }
+
+  .tmpl-royal .fields-table {
+    width: 75%;
+    margin: 0 auto;
+  }
+
+  .tmpl-royal .field-row {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 20px;
+    gap: 12px;
+  }
+
+  .tmpl-royal .field-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 170px;
+    letter-spacing: 1px;
+    color: #5a3e10;
+  }
+
+  .tmpl-royal .field-dots {
+    flex: 1;
+    border-bottom: 1px dotted #d4a017;
+    height: 16px;
+  }
+
+  .tmpl-royal .field-val {
+    min-width: 180px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    color: #1a1208;
+    text-align: right;
+  }
+
+  .tmpl-royal .seal {
+    margin: 20px auto;
+    width: 60px; height: 60px;
+    border: 3px solid #d4a017;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #d4a017;
+  }
+
+  /* --- Template 4: Minimalist Academic --- */
+  .tmpl-minimal {
+    background: #fff;
+    color: #1a1a1a;
+    display: flex;
+    flex-direction: column;
+    padding: 60px;
+  }
+
+  .tmpl-minimal .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 60px;
+  }
+
+  .tmpl-minimal .top-row img { width: 80px; }
+
+  .tmpl-minimal .top-row .skf-text {
+    text-align: right;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #888;
+    line-height: 1.8;
+  }
+
+  .tmpl-minimal .big-ca2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 120px;
+    line-height: 1;
+    color: #f0f0f0;
+    letter-spacing: 10px;
+    margin-bottom: -20px;
+  }
+
+  .tmpl-minimal .assignment-line {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 13px;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    color: #c0392b;
+    margin-bottom: 50px;
+    padding-left: 4px;
+  }
+
+  .tmpl-minimal .red-rule { width: 50px; height: 3px; background: #c0392b; margin-bottom: 40px; }
+
+  .tmpl-minimal .fields-block { flex: 1; }
+
+  .tmpl-minimal .field-row {
+    display: flex;
+    margin-bottom: 22px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .tmpl-minimal .field-row:last-child { border-bottom: none; }
+
+  .tmpl-minimal .field-label {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #aaa;
+    min-width: 200px;
+    padding-top: 2px;
+  }
+
+  .tmpl-minimal .field-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    color: #1a1a1a;
+    flex: 1;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 900px) {
+    .main-layout { grid-template-columns: 1fr; }
+    .sidebar { max-height: 50vh; position: static; }
+    .preview-area { padding: 20px 10px; }
+    #frontpage { transform: scale(0.55); transform-origin: top center; }
+    .preview-wrapper { margin-bottom: -350px; }
+  }
+
+  /* Loading overlay */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .loading-overlay.show { display: flex; }
+
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: #c0392b;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-overlay p { color: #fff; font-family: 'Josefin Sans', sans-serif; letter-spacing: 3px; font-size: 13px; }
+
+  .preview-scale-info {
+    text-align: center;
+    padding: 10px;
+    font-size: 11px;
+    color: #555;
+    font-family: 'Josefin Sans', sans-serif;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <p>Generating your document...</p>
+</div>
+
+<header class="app-header">
+  <div class="badge">Supreme Knowledge Foundation</div>
+  <h1>CA2 Front Page Generator</h1>
+  <p>Choose a template · Fill the form · Download instantly</p>
+</header>
+
+<div class="main-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <!-- Templates -->
+    <div class="section-title">Choose Template</div>
+    <div class="template-grid">
+      <div class="tmpl-card active" onclick="setTemplate('classic')" id="card-classic">
+        <div class="tmpl-thumb" style="background:linear-gradient(135deg,#fff,#fce4e4); color:#c0392b;">
+          ✦ Classic
+        </div>
+        <div class="tmpl-name">Classic Elegant</div>
+        <div class="active-dot"></div>
+      </div>
+      <div class="tmpl-card" onclick="setTemplate('modern')" id="card-modern">
+        <div class="tmpl-thumb" style="background:linear-gradient(135deg,#0f1117,#1a1a3e); color:#fff;">
+          ⬡ Modern
+        </div>
+        <div class="tmpl-name">Modern Dark</div>
+        <div class="active-dot"></div>
+      </div>
+      <div class="tmpl-card" onclick="setTemplate('royal')" id="card-royal">
+        <div class="tmpl-thumb" style="background:linear-gradient(135deg,#fefcf5,#fdf3cc); color:#d4a017;">
+          ♛ Royal
+        </div>
+        <div class="tmpl-name">Royal Gold</div>
+        <div class="active-dot"></div>
+      </div>
+      <div class="tmpl-card" onclick="setTemplate('minimal')" id="card-minimal">
+        <div class="tmpl-thumb" style="background:linear-gradient(135deg,#fff,#f5f5f5); color:#c0392b; font-family:'Bebas Neue',sans-serif; font-size:30px; letter-spacing:5px;">
+          CA2
+        </div>
+        <div class="tmpl-name">Minimal Academic</div>
+        <div class="active-dot"></div>
+      </div>
+    </div>
+
+    <!-- Form Fields -->
+    <div class="section-title">Student Details</div>
+    <div class="form-area">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="f-name" placeholder="e.g. Rahul Sharma" oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>University Roll No.</label>
+        <input type="text" id="f-roll" placeholder="e.g. 20CS1234" oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>Registration Number</label>
+        <input type="text" id="f-reg" placeholder="e.g. 202012345678" oninput="updatePreview()">
+      </div>
+      <div class="form-group">
+        <label>Department</label>
+        <input type="text" id="f-dept" placeholder="e.g. Computer Science" oninput="updatePreview()">
+      </div>
+      <div class="two-col">
+        <div class="form-group">
+          <label>Stream</label>
+          <input type="text" id="f-stream" placeholder="B.Sc / B.Com…" oninput="updatePreview()">
+        </div>
+        <div class="form-group">
+          <label>Year</label>
+          <select id="f-year" onchange="updatePreview()">
+            <option value="">Select</option>
+            <option>1st Year</option>
+            <option>2nd Year</option>
+            <option>3rd Year</option>
+            <option>4th Year</option>
+          </select>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="form-group">
+          <label>Semester</label>
+          <select id="f-sem" onchange="updatePreview()">
+            <option value="">Select</option>
+            <option>Semester 1</option>
+            <option>Semester 2</option>
+            <option>Semester 3</option>
+            <option>Semester 4</option>
+            <option>Semester 5</option>
+            <option>Semester 6</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Paper Code</label>
+          <input type="text" id="f-code" placeholder="e.g. CS301" oninput="updatePreview()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Subject Name</label>
+        <input type="text" id="f-subject" placeholder="e.g. Data Structures" oninput="updatePreview()">
+      </div>
+    </div>
+
+    <!-- Style Controls -->
+    <div class="section-title">Customize Style</div>
+    <div class="style-controls">
+      <div class="form-group">
+        <label>Font Family</label>
+        <select id="s-font" onchange="updatePreview()">
+          <option value="'Raleway', sans-serif">Raleway (Default)</option>
+          <option value="'Playfair Display', serif">Playfair Display</option>
+          <option value="'Montserrat', sans-serif">Montserrat</option>
+          <option value="'Cormorant Garamond', serif">Cormorant Garamond</option>
+          <option value="'Josefin Sans', sans-serif">Josefin Sans</option>
+          <option value="'Libre Baskerville', serif">Libre Baskerville</option>
+          <option value="'Poppins', sans-serif">Poppins</option>
+        </select>
+      </div>
+      <div class="style-row">
+        <div class="form-group">
+          <label>Accent Color</label>
+          <input type="color" id="s-accent" value="#c0392b" oninput="updatePreview()">
+        </div>
+        <div class="form-group">
+          <label>Text Color</label>
+          <input type="color" id="s-textcolor" value="#1a1a1a" oninput="updatePreview()">
+        </div>
+      </div>
+      <div class="style-row">
+        <div class="form-group">
+          <label>BG Color</label>
+          <input type="color" id="s-bg" value="#ffffff" oninput="updatePreview()">
+        </div>
+        <div class="form-group">
+          <label>Font Size</label>
+          <select id="s-size" onchange="updatePreview()">
+            <option value="13px">Small</option>
+            <option value="14px" selected>Medium</option>
+            <option value="16px">Large</option>
+            <option value="18px">X-Large</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Download -->
+    <div class="download-area">
+      <button class="dl-btn dl-pdf" onclick="downloadPDF()">
+        📄 Download as PDF
+      </button>
+      <div class="dl-row">
+        <button class="dl-btn dl-img" onclick="downloadIMG('png')">🖼 PNG</button>
+        <button class="dl-btn dl-img" onclick="downloadIMG('jpeg')">📷 JPG</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- PREVIEW -->
+  <main class="preview-area">
+    <div>
+      <div class="preview-scale-info">Live Preview (A4)</div>
+      <div class="preview-wrapper">
+        <div id="frontpage">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+// SKF logo as base64-compatible URL (we'll use img src with the SVG-like approach)
+// Since we have the actual logo, we'll use a placeholder that matches
+const SKF_LOGO_URL = 'https://i.imgur.com/placeholder.png'; // will be replaced with inline
+
+// We'll create an SVG logo that matches the Supreme Knowledge Foundation branding
+const SKF_LOGO_SVG = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120">
+  <rect width="200" height="90" rx="4" fill="#c0392b"/>
+  <path d="M100 0 L180 60 L100 90 L20 60 Z" fill="#8e1b0f" opacity="0.3"/>
+  <!-- Open book shape -->
+  <path d="M40 20 Q70 10 100 25 Q130 10 160 20 L160 75 Q130 65 100 75 Q70 65 40 75 Z" fill="white" opacity="0.15"/>
+  <path d="M100 25 L100 75" stroke="white" stroke-width="2" opacity="0.4"/>
+  <text x="100" y="48" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="white" text-anchor="middle" letter-spacing="2">SUPREME</text>
+  <text x="100" y="62" font-family="Arial Black,sans-serif" font-size="9" font-weight="700" fill="white" text-anchor="middle" letter-spacing="1">KNOWLEDGE</text>
+  <text x="100" y="75" font-family="Arial Black,sans-serif" font-size="9" font-weight="700" fill="white" text-anchor="middle" letter-spacing="1">FOUNDATION</text>
+  <text x="100" y="108" font-family="Arial,sans-serif" font-size="9" fill="#c0392b" text-anchor="middle" font-style="italic">Tomorrow, Created Today</text>
+</svg>`)}`;
+
+let currentTemplate = 'classic';
+
+const TEMPLATES = {
+  classic: renderClassic,
+  modern: renderModern,
+  royal: renderRoyal,
+  minimal: renderMinimal
+};
+
+function getFormData() {
+  return {
+    name: document.getElementById('f-name').value || '',
+    roll: document.getElementById('f-roll').value || '',
+    reg: document.getElementById('f-reg').value || '',
+    dept: document.getElementById('f-dept').value || '',
+    stream: document.getElementById('f-stream').value || '',
+    year: document.getElementById('f-year').value || '',
+    sem: document.getElementById('f-sem').value || '',
+    subject: document.getElementById('f-subject').value || '',
+    code: document.getElementById('f-code').value || '',
+  };
+}
+
+function getStyles() {
+  return {
+    font: document.getElementById('s-font').value,
+    accent: document.getElementById('s-accent').value,
+    textColor: document.getElementById('s-textcolor').value,
+    bg: document.getElementById('s-bg').value,
+    size: document.getElementById('s-size').value,
+  };
+}
+
+function setTemplate(tmpl) {
+  currentTemplate = tmpl;
+  // Update card UI
+  document.querySelectorAll('.tmpl-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('card-' + tmpl).classList.add('active');
+  updatePreview();
+}
+
+function updatePreview() {
+  const data = getFormData();
+  const styles = getStyles();
+  const fp = document.getElementById('frontpage');
+  fp.innerHTML = TEMPLATES[currentTemplate](data, styles);
+}
+
+function logoImg(width = 130) {
+  return `<img src="${SKF_LOGO_SVG}" width="${width}" alt="Supreme Knowledge Foundation Logo">`;
+}
+
+function val(v) {
+  return v || '<span style="color:#bbb;font-style:italic;font-size:12px;">—</span>';
+}
+
+// ===== Template Renderers =====
+
+function renderClassic(d, s) {
+  return `
+  <div class="tmpl-classic" style="font-family:${s.font}; background:${s.bg}; color:${s.textColor}; width:100%; min-height:842px; display:flex; flex-direction:column; align-items:center;">
+    <div class="top-bar" style="width:100%;height:12px;background:${s.accent};"></div>
+    <div style="margin:30px auto 10px; text-align:center;">${logoImg(130)}</div>
+    <div style="width:80%;height:2px;background:linear-gradient(90deg,transparent,${s.accent},transparent);margin:10px auto;"></div>
+    <div style="margin:20px auto; background:${s.accent}; color:#fff; padding:14px 50px; font-family:'Playfair Display',serif; font-size:22px; font-weight:700; letter-spacing:4px; text-align:center; position:relative;">
+      CA2 ASSIGNMENT
+    </div>
+    <div style="width:80%;height:1px;background:linear-gradient(90deg,transparent,${s.accent},transparent);margin:6px auto;"></div>
+    <div style="width:82%; margin:28px auto; border:2px solid ${s.accent}; padding:32px 40px; position:relative; background:${s.bg};">
+      <div style="position:absolute;inset:6px;border:1px solid ${s.accent}33; pointer-events:none;"></div>
+      ${[
+        ['NAME', d.name],
+        ['UNIVERSITY ROLL', d.roll],
+        ['REGISTRATION NUMBER', d.reg],
+        ['DEPARTMENT', d.dept],
+        ['STREAM', d.stream],
+        ['YEAR', d.year],
+        ['SEMESTER', d.sem],
+        ['SUBJECT', d.subject],
+        ['PAPER CODE', d.code],
+      ].map(([label, value]) => `
+        <div style="display:flex;align-items:baseline;margin-bottom:16px;border-bottom:1px solid ${s.textColor}11;padding-bottom:10px;">
+          <span style="font-weight:700;min-width:190px;font-size:${s.size};letter-spacing:1px;text-transform:uppercase;color:${s.textColor};">${label}</span>
+          <span style="flex:1;padding-left:10px;color:${s.accent};font-family:'Cormorant Garamond',serif;font-size:17px;">${val(value)}</span>
+        </div>
+      `).join('')}
+    </div>
+    <div style="margin-top:auto;width:100%;padding:16px;text-align:center;font-size:11px;color:#888;letter-spacing:1px;border-top:1px solid #eee;">
+      Supreme Knowledge Foundation · Tomorrow, Created Today
+    </div>
+  </div>`;
+}
+
+function renderModern(d, s) {
+  const isLight = s.bg === '#ffffff' || s.bg > '#aaaaaa';
+  const bgColor = currentTemplate === 'modern' ? '#0f1117' : s.bg;
+  const textMain = currentTemplate === 'modern' ? '#ffffff' : s.textColor;
+  return `
+  <div style="background:${bgColor};color:${textMain};width:100%;min-height:842px;display:flex;flex-direction:column;position:relative;overflow:hidden;">
+    <div style="width:6px;position:absolute;left:0;top:0;bottom:0;background:linear-gradient(180deg,${s.accent},${s.accent}aa);"></div>
+    <div style="padding:50px 50px 50px 70px;flex:1;display:flex;flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:20px;margin-bottom:40px;padding-bottom:30px;border-bottom:1px solid rgba(255,255,255,0.08);">
+        ${logoImg(100)}
+        <div>
+          <div style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:${textMain};letter-spacing:2px;">SUPREME KNOWLEDGE FOUNDATION</div>
+          <div style="font-size:11px;color:#888;letter-spacing:1px;margin-top:4px;">Tomorrow, Created Today</div>
+        </div>
+      </div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:90px;line-height:0.9;color:rgba(255,255,255,0.04);position:absolute;right:20px;top:110px;letter-spacing:3px;pointer-events:none;">ASSIGNMENT</div>
+      <div style="font-family:'Montserrat',sans-serif;font-size:36px;font-weight:900;letter-spacing:6px;margin-bottom:6px;color:${textMain};">CA2</div>
+      <div style="font-size:11px;color:${s.accent};letter-spacing:5px;text-transform:uppercase;margin-bottom:50px;font-family:'Josefin Sans',sans-serif;">ASSIGNMENT</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;font-family:${s.font};">
+        ${[
+          ['NAME', d.name],
+          ['UNIVERSITY ROLL', d.roll],
+          ['REGISTRATION NUMBER', d.reg],
+          ['DEPARTMENT', d.dept],
+          ['STREAM', d.stream],
+          ['YEAR', d.year],
+          ['SEMESTER', d.sem],
+          ['SUBJECT', d.subject],
+          ['PAPER CODE', d.code],
+        ].map(([label, value]) => `
+          <div>
+            <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:${s.accent};margin-bottom:6px;font-family:'Josefin Sans',sans-serif;">${label}</div>
+            <div style="font-size:${s.size};font-weight:600;color:${textMain};font-family:'Montserrat',sans-serif;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.1);min-height:28px;">${val(value)}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="margin-top:auto;padding-top:30px;display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
+        <span style="font-size:10px;color:#555;letter-spacing:2px;font-family:'Josefin Sans',sans-serif;">CA2 · ${new Date().getFullYear()}</span>
+        <div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderRoyal(d, s) {
+  const gold = '#d4a017';
+  return `
+  <div style="background:${s.bg};color:${s.textColor};width:100%;min-height:842px;display:flex;flex-direction:column;align-items:center;position:relative;box-sizing:border-box;border:12px solid ${gold};">
+    <div style="position:absolute;inset:16px;border:2px solid ${gold}44;pointer-events:none;"></div>
+    <!-- corners -->
+    <div style="position:absolute;top:24px;left:24px;width:26px;height:26px;border-top:3px solid ${gold};border-left:3px solid ${gold};"></div>
+    <div style="position:absolute;top:24px;right:24px;width:26px;height:26px;border-top:3px solid ${gold};border-right:3px solid ${gold};"></div>
+    <div style="position:absolute;bottom:24px;left:24px;width:26px;height:26px;border-bottom:3px solid ${gold};border-left:3px solid ${gold};"></div>
+    <div style="position:absolute;bottom:24px;right:24px;width:26px;height:26px;border-bottom:3px solid ${gold};border-right:3px solid ${gold};"></div>
+
+    <div style="margin:45px auto 16px; text-align:center;">${logoImg(110)}</div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin:10px auto;width:60%;">
+      <div style="flex:1;height:1px;background:${gold};"></div>
+      <div style="width:8px;height:8px;background:${gold};transform:rotate(45deg);"></div>
+      <div style="flex:1;height:1px;background:${gold};"></div>
+    </div>
+
+    <div style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;letter-spacing:6px;color:#8B6914;margin:14px 0 4px;text-align:center;">CA2 ASSIGNMENT</div>
+    <div style="font-size:11px;letter-spacing:5px;color:${gold};text-transform:uppercase;margin-bottom:30px;font-family:'Josefin Sans',sans-serif;">Academic Submission</div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin:0 auto 24px;width:70%;">
+      <div style="flex:1;height:1px;background:${gold}66;"></div>
+      <div style="width:6px;height:6px;background:${gold}66;transform:rotate(45deg);"></div>
+      <div style="flex:1;height:1px;background:${gold}66;"></div>
+    </div>
+
+    <div style="width:74%;margin:0 auto;font-family:${s.font};">
+      ${[
+        ['Name', d.name],
+        ['University Roll No.', d.roll],
+        ['Registration Number', d.reg],
+        ['Department', d.dept],
+        ['Stream', d.stream],
+        ['Year', d.year],
+        ['Semester', d.sem],
+        ['Subject', d.subject],
+        ['Paper Code', d.code],
+      ].map(([label, value]) => `
+        <div style="display:flex;align-items:baseline;margin-bottom:18px;gap:8px;">
+          <span style="font-family:'Cormorant Garamond',serif;font-weight:700;font-size:13px;min-width:170px;letter-spacing:1px;color:${s.textColor === '#1a1a1a' ? '#5a3e10' : s.textColor};">${label}</span>
+          <span style="flex:1;border-bottom:1px dotted ${gold};height:18px;"></span>
+          <span style="min-width:160px;font-family:'Cormorant Garamond',serif;font-size:${s.size};color:${s.textColor};text-align:right;">${val(value)}</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="margin:20px auto;width:60px;height:60px;border:3px solid ${gold};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:${gold};">♛</div>
+
+    <div style="margin-bottom:35px;font-size:10px;color:#aaa;letter-spacing:2px;font-family:'Josefin Sans',sans-serif;">Supreme Knowledge Foundation</div>
+  </div>`;
+}
+
+function renderMinimal(d, s) {
+  return `
+  <div style="background:${s.bg};color:${s.textColor};width:100%;min-height:842px;display:flex;flex-direction:column;padding:60px;font-family:${s.font};box-sizing:border-box;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:60px;">
+      ${logoImg(80)}
+      <div style="text-align:right;font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:2px;color:#888;line-height:2;">
+        <div>SUPREME KNOWLEDGE FOUNDATION</div>
+        <div>Tomorrow, Created Today</div>
+      </div>
+    </div>
+
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:110px;line-height:1;color:${s.textColor}11;letter-spacing:10px;margin-bottom:-10px;">CA2</div>
+    <div style="font-family:'Josefin Sans',sans-serif;font-size:12px;letter-spacing:8px;text-transform:uppercase;color:${s.accent};margin-bottom:40px;">Assignment</div>
+    <div style="width:50px;height:3px;background:${s.accent};margin-bottom:40px;"></div>
+
+    <div style="flex:1;">
+      ${[
+        ['Name', d.name],
+        ['University Roll No.', d.roll],
+        ['Registration Number', d.reg],
+        ['Department', d.dept],
+        ['Stream', d.stream],
+        ['Year', d.year],
+        ['Semester', d.sem],
+        ['Subject', d.subject],
+        ['Paper Code', d.code],
+      ].map(([label, value]) => `
+        <div style="display:flex;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid ${s.textColor}10;align-items:baseline;">
+          <span style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:${s.textColor}55;min-width:200px;padding-top:2px;">${label}</span>
+          <span style="font-family:'Playfair Display',serif;font-size:${s.size};color:${s.textColor};flex:1;">${val(value)}</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="display:flex;align-items:center;gap:14px;padding-top:30px;border-top:1px solid ${s.textColor}10;">
+      <div style="font-size:10px;color:${s.textColor}44;letter-spacing:3px;font-family:'Josefin Sans',sans-serif;">SKF · ${new Date().getFullYear()}</div>
+      <div style="flex:1;height:1px;background:${s.textColor}10;"></div>
+    </div>
+  </div>`;
+}
+
+// ===== DOWNLOAD FUNCTIONS =====
+
+async function downloadPDF() {
+  document.getElementById('loadingOverlay').classList.add('show');
+  await new Promise(r => setTimeout(r, 100));
+
+  try {
+    const el = document.getElementById('frontpage');
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      logging: false,
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const w = pdf.internal.pageSize.getWidth();
+    const h = pdf.internal.pageSize.getHeight();
+    pdf.addImage(imgData, 'JPEG', 0, 0, w, h);
+
+    const name = document.getElementById('f-name').value || 'CA2_FrontPage';
+    pdf.save(`${name}_CA2_FrontPage.pdf`);
+  } catch(e) {
+    alert('Error generating PDF. Please try again.');
+    console.error(e);
+  }
+
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+async function downloadIMG(format) {
+  document.getElementById('loadingOverlay').classList.add('show');
+  await new Promise(r => setTimeout(r, 100));
+
+  try {
+    const el = document.getElementById('frontpage');
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      logging: false,
+    });
+
+    const mime = format === 'png' ? 'image/png' : 'image/jpeg';
+    const ext = format;
+    const imgData = canvas.toDataURL(mime, 0.95);
+
+    const a = document.createElement('a');
+    const name = document.getElementById('f-name').value || 'CA2_FrontPage';
+    a.download = `${name}_CA2_FrontPage.${ext}`;
+    a.href = imgData;
+    a.click();
+  } catch(e) {
+    alert('Error generating image. Please try again.');
+    console.error(e);
+  }
+
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// Initialize
+updatePreview();
+</script>
+
+</body>
+</html>
